@@ -1,4 +1,95 @@
-/* 모달 스타일 */
+body {
+    font-family: Arial, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    background-color: #f5f5f5;
+}
+
+.game-container {
+    text-align: center;
+    background-color: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    width: 300px;
+}
+
+.click-area {
+    width: 150px;
+    height: 150px;
+    background-color: #0088cc;
+    border-radius: 50%;
+    margin: 20px auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: transform 0.1s;
+    color: white;
+    font-weight: bold;
+}
+
+.click-area:active {
+    transform: scale(0.95);
+}
+
+.score, .time {
+    margin: 10px 0;
+    font-size: 18px;
+}
+
+button {
+    background-color: #0088cc;
+    color: white;
+    border: none;
+    padding: 10px 15px;
+    border-radius: 5px;
+    cursor: pointer;
+    margin-top: 10px;
+    font-size: 16px;
+    display: block;
+    width: 100%;
+    margin-bottom: 10px;
+}
+
+button:disabled {
+    background-color: #cccccc;
+    cursor: not-allowed;
+}
+
+.wallet-container {
+    margin: 20px 0;
+}
+
+.wallet-info {
+    background-color: #f0f0f0;
+    padding: 10px;
+    border-radius: 5px;
+    margin-bottom: 10px;
+    font-size: 14px;
+    text-align: left;
+}
+
+.wallet-btn {
+    width: 100%;
+    margin: 5px 0;
+}
+
+.wallet-btn.disconnect {
+    background-color: #e74c3c;
+}
+
+#submitScore {
+    background-color: #4CAF50;
+}
+
+#showLeaderboard {
+    background-color: #2196F3;
+}
+
 .modal {
     display: none;
     position: fixed;
@@ -33,7 +124,6 @@
     color: black;
 }
 
-/* 리더보드 스타일 */
 #leaderboard-table {
     width: 100%;
     border-collapse: collapse;
@@ -54,12 +144,25 @@
     background-color: #e6f7ff;
 }
 
-/* 리더보드 관련 버튼 스타일 */
+h1 {
+    color: #0088cc;
+    margin-bottom: 20px;
+}
+
+h2 {
+    color: #0088cc;
+    margin-top: 0;
+}
+
+/* 버튼 배치 스타일 */
 #submitScore, #showLeaderboard {
     margin-top: 10px;
+}
+
+#submitScore {
     background-color: #4CAF50;
 }
 
-#submitScore:disabled {
-    background-color: #cccccc;
+#showLeaderboard {
+    background-color: #2196F3;
 }

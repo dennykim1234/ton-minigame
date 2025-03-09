@@ -215,108 +215,130 @@ async function submitScore() {
 // 리더보드 표시
 async function showLeaderboard() {
     try {
-        // 서버에서 리더보드 데이터 가져오기
-        const response = await fetch('https://yourgameserver.com/api/leaderboard').catch(err => {
-            console.log('서버 연결 오류 (개발 중에는 무시됨):', err);
-            // 개발 중에는 에러를 무시하고 넘어감
-            return { ok: false };
+        // 리더보드 모달 요소 가져오기
+        const leaderboardModal = document.getElementById('leaderboard-modal');
+        const leaderboardBody = document.getElementById('leaderboard-body');
+        
+        // 테이블 내용 비우기
+        leaderboardBody.innerHTML = '';
+        
+        // 로컬 스토리지에서 리더보드 데이터 가져오기
+        let leaderboard = JSON.parse(localStorage.getItem('leaderboard') || '[]');
+        
+        // 데이터가 없으면 새 데이터 만들기
+        if (leaderboard.length === 0) {
+            // 임시 데이터
+            leaderboard = [
+                { playerName: '최고의 플레이어', score: 120 },
+                { playerName: '톤마스터', score: 95 },
+                { playerName: '게임왕', score: 75 },
+                { playerName: '클릭의신', score: 60 }
+            ];
+            
+            // 현재 플레이어 점수도 추가
+            if (score > 0) {
+                leaderboard.push({ playerName: playerName, score: score });
+            }
+            
+            // 점수 순으로 정렬
+            leaderboard.sort((a, b) => b.score - a.score);
+            
+            // 로컬 스토리지에 저장
+            localStorage.setItem('leaderboard', JSON.stringify(leaderboard));
+        }
+        
+        // 리더보드 데이터를 테이블에 추가
+        leaderboard.forEach((item, index) => {
+            const row = document.createElement('tr');
+            
+            // 현재 플레이어 강조 표시
+            if (item.playerName === playerName && item.score === score) {
+                row.classList.add('highlight-row');
+            }
+            
+            row.innerHTML = `
+                <td>${index + 1}</td>
+                <td>${item.playerName}</td>
+                <td>${item.score}</td>
+            `;
+            
+            leaderboardBody.appendChild(row);
         });
         
-        if (response.ok) {
-            const data = await response.json();
-            displayLeaderboard(data.leaderboard);
-        } else {
-            // 서버 연결 실패 시 임시 리더보드 표시
-            showOfflineLeaderboard();
-        }
+        // 모달 표시
+        leaderboardModal.style.display = 'block';
+        
     } catch (error) {
         console.error('리더보드 로딩 오류:', error);
-        showOfflineLeaderboard();
+        alert('리더보드를 불러오는 중 오류가 발생했습니다.');
     }
 }
 
-// 오프라인 임시 리더보드 표시 (개발용)
-function showOfflineLeaderboard() {
-    // 임시 리더보드 데이터
-    const dummyLeaderboard = [
-        { playerName: '최고의 플레이어', score: 120 },
-        { playerName: '톤마스터', score: 95 },
-        { playerName: playerName, score: score },
-        { playerName: '게임왕', score: 75 },
-        { playerName: '클릭의신', score: 60 }
-    ].sort((a, b) => b.score - a.score);
-    
-    displayLeaderboard(dummyLeaderboard);
-}
-
-// 리더보드 데이터 화면에 표시
-function displayLeaderboard(leaderboardData) {
-    // 리더보드 컨테이너 생성 또는 찾기
-    let leaderboardContainer = document.getElementById('leaderboard-container');
-    if (!leaderboardContainer) {
-        leaderboardContainer = document.createElement('div');
-        leaderboardContainer.id = 'leaderboard-container';
-        leaderboardContainer.style.cssText = `
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            background-color: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
-            z-index: 1000;
-            max-width: 80%;
-            width: 300px;
-        `;
-        document.body.appendChild(leaderboardContainer);
+// 점수 제출 함수
+function submitScore() {
+    if (!isWalletConnected()) {
+        alert('점수를 등록하려면 TON 지갑을 연결해주세요.');
+        return;
     }
     
-    // 리더보드 내용 생성
-    let html = `
-        <h3 style="margin-top: 0; text-align: center;">리더보드</h3>
-        <table style="width: 100%; border-collapse: collapse;">
-            <tr>
-                <th style="text-align: left; padding: 5px; border-bottom: 1px solid #ddd;">순위</th>
-                <th style="text-align: left; padding: 5px; border-bottom: 1px solid #ddd;">이름</th>
-                <th style="text-align: right; padding: 5px; border-bottom: 1px solid #ddd;">점수</th>
-            </tr>
-    `;
+    // 플레이어 이름 입력 받기
+    const inputName = prompt('리더보드에 표시할 이름을 입력하세요:', playerName);
+    if (inputName === null) return; // 취소 시 중단
     
-    leaderboardData.forEach((item, index) => {
-        const isCurrentPlayer = item.playerName === playerName && item.score === score;
-        const rowStyle = isCurrentPlayer ? 'background-color: #f0f8ff;' : '';
-        
-        html += `
-            <tr style="${rowStyle}">
-                <td style="padding: 5px; border-bottom: 1px solid #eee;">${index + 1}</td>
-                <td style="padding: 5px; border-bottom: 1px solid #eee;">${item.playerName}</td>
-                <td style="text-align: right; padding: 5px; border-bottom: 1px solid #eee;">${item.score}</td>
-            </tr>
-        `;
+    playerName = inputName || playerName; // 빈 값이면 기존 이름 유지
+    
+    // 기존 리더보드 데이터 가져오기
+    let leaderboard = JSON.parse(localStorage.getItem('leaderboard') || '[]');
+    
+    // 새 점수 추가
+    leaderboard.push({
+        playerName: playerName,
+        score: score,
+        date: new Date().toISOString()
     });
     
-    html += `
-        </table>
-        <div style="text-align: center; margin-top: 15px;">
-            <button id="close-leaderboard" style="padding: 5px 10px;">닫기</button>
-        </div>
-    `;
+    // 점수 순으로 정렬
+    leaderboard.sort((a, b) => b.score - a.score);
     
-    leaderboardContainer.innerHTML = html;
+    // 최대 100개 유지
+    if (leaderboard.length > 100) {
+        leaderboard = leaderboard.slice(0, 100);
+    }
     
-    // 닫기 버튼 이벤트 리스너
-    document.getElementById('close-leaderboard').addEventListener('click', () => {
-        leaderboardContainer.remove();
-    });
+    // 로컬 스토리지에 저장
+    localStorage.setItem('leaderboard', JSON.stringify(leaderboard));
+    
+    alert(`${playerName}님의 점수 ${score}점이 리더보드에 등록되었습니다!`);
+    submitScoreButton.disabled = true;
+    
+    // 리더보드 표시
+    showLeaderboard();
 }
 
-// 이벤트 리스너
-clickArea.addEventListener('click', () => {
-    if (gameActive) {
-        score++;
-        scoreElement.textContent = score;
+// 리더보드 닫기 함수
+function closeLeaderboard() {
+    const leaderboardModal = document.getElementById('leaderboard-modal');
+    leaderboardModal.style.display = 'none';
+}
+
+// DOM이 로드된 후 이벤트 리스너 추가
+document.addEventListener('DOMContentLoaded', () => {
+    initWalletConnection();
+    initGame();
+    
+    // 리더보드 닫기 버튼에 이벤트 리스너 추가
+    const closeLeaderboardButton = document.getElementById('close-leaderboard');
+    if (closeLeaderboardButton) {
+        closeLeaderboardButton.addEventListener('click', closeLeaderboard);
     }
+    
+    // 모달 외부 클릭 시 닫기
+    window.addEventListener('click', (event) => {
+        const leaderboardModal = document.getElementById('leaderboard-modal');
+        if (event.target === leaderboardModal) {
+            closeLeaderboard();
+        }
+    });
 });
 
 startButton.addEventListener('click', startGame);
