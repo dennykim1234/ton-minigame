@@ -23,14 +23,6 @@
                 <div class="wallet-info">
                     <div class="wallet-address">주소: <span id="wallet-address"></span></div>
                     <div class="ton-balance">TON 잔액: <span id="ton-balance">0.00</span></div>
-                    <!-- 가상 TON 잔액 표시 -->
-                    <div class="wallet-info">
-                    <div>가상 TON 잔액: <span id="virtual-ton-balance">0.00</span></div>
-                    </div>
-
-                    <!-- 리더보드 및 점수 제출 버튼 -->
-                    <button id="submitScore" disabled>점수 제출하기</button>
-                    <button id="showLeaderboard">리더보드 보기</button>
                 </div>
                 <button id="disconnect-wallet-btn" class="wallet-btn disconnect">연결 해제</button>
             </div>
@@ -38,11 +30,37 @@
         
         <button id="startGame">게임 시작</button>
         <button id="claimReward" disabled>보상 받기</button>
+        
+        <!-- 리더보드 관련 버튼 추가 -->
+        <button id="submitScore" disabled>점수 등록하기</button>
+        <button id="showLeaderboard">리더보드 보기</button>
     </div>
 
-<!-- 텔레그램 웹앱 API -->
-<script src="https://telegram.org/js/telegram-web-app.js"></script>
-<!-- 게임 스크립트 -->
-<script type="module" src="script.js"></script>
+    <!-- 리더보드 모달 (처음에는 숨겨져 있음) -->
+    <div id="leaderboard-modal" class="modal" style="display: none;">
+        <div class="modal-content">
+            <span class="close-button" id="close-leaderboard">&times;</span>
+            <h2>리더보드</h2>
+            <div id="leaderboard-container">
+                <table id="leaderboard-table">
+                    <thead>
+                        <tr>
+                            <th>순위</th>
+                            <th>플레이어</th>
+                            <th>점수</th>
+                        </tr>
+                    </thead>
+                    <tbody id="leaderboard-body">
+                        <!-- 리더보드 데이터가 여기에 추가됨 -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- 텔레그램 웹앱 API -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <!-- 게임 스크립트 -->
+    <script type="module" src="script.js"></script>
 </body>
 </html>

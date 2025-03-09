@@ -3,7 +3,7 @@ import { initWalletConnection, isWalletConnected, getWalletInfo } from './wallet
 
 // 게임 변수
 let score = 0;
-let timeLeft = 30;
+let timeLeft = 10;
 let gameActive = false;
 let timerInterval;
 let playerName = "플레이어"; // 플레이어 이름 기본값
@@ -55,7 +55,7 @@ function loadVirtualBalance() {
 // 게임 시작 함수
 function startGame() {
     score = 0;
-    timeLeft = 30;
+    timeLeft = 10;
     gameActive = true;
     
     // UI 업데이트
