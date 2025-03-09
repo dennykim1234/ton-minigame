@@ -1,0 +1,107 @@
+;; 간단한 TON 게임 보상 컨트랙트
+
+;; 상수 정의
+const int MIN_SCORE = 20;  ;; 보상을 받기 위한 최소 점수
+const int REWARD_AMOUNT = 10000000;  ;; 기본 보상 금액 (0.01 TON = 10,000,000 나노톤)
+
+;; 스토리지 구조
+;; owner_address:MsgAddress game_config:^Cell player_stats:^Cell
+
+;; 스토리지 로드
+(slice, cell, cell) load_data() inline {
+  var ds = get_data().begin_parse();
+  return (
+    ds~load_msg_addr(),  ;; 컨트랙트 소유자 주소
+    ds~load_ref(),       ;; 게임 설정 (최소 점수, 보상 금액 등)
+    ds~load_ref()        ;; 플레이어 통계 데이터
+  );
+}
+
+;; 스토리지 저장
+() save_data(slice owner_address, cell game_config, cell player_stats) impure inline {
+  set_data(begin_cell()
+    .store_slice(owner_address)
+    .store_ref(game_config)
+    .store_ref(player_stats)
+    .end_cell());
+}
+
+;; 게임 설정 로드
+(int, int) load_game_config(cell config_cell) inline {
+  var cs = config_cell.begin_parse();
+  return (
+    cs~load_uint(32),  ;; 최소 점수
+    cs~load_coins()    ;; 보상 금액
+  );
+}
+
+;; 보상 청구 처리
+() process_reward_claim(slice sender_address, int query_id, int user_score, slice owner_address, cell game_config, cell player_stats) impure {
+  ;; 게임 설정 로드
+  (int min_score, int reward_amount) = load_game_config(game_config);
+  
+  ;; 점수 확인
+  throw_if(100, user_score < min_score);  ;; 점수가 부족하면 오류 발생
+  
+  ;; 중복 청구 확인 (실제로는 더 복잡한 로직 필요)
+  ;; 여기서는 간단하게 구현
+  
+  ;; 보상 전송
+  var msg = begin_cell()
+    .store_uint(0x10, 6)  ;; 외부 메시지 플래그
+    .store_slice(sender_address)  ;; 받는 주소
+    .store_coins(reward_amount)   ;; 보상 금액
+    .store_uint(0, 1 + 4 + 4 + 64 + 32 + 1 + 1)  ;; 기본 헤더
+    .store_uint(0, 32)  ;; 응답 오퍼레이션
+    .store_uint(query_id, 64)  ;; 쿼리 ID
+    .end_cell();
+    
+  send_raw_message(msg, 1);  ;; 메시지 전송 (모드 1: 잔액에서 수수료 지불)
+}
+
+;; 메인 함수 - 받은 내부 메시지 처리
+() recv_internal(int my_balance, int msg_value, cell in_msg_full, slice in_msg_body) impure {
+  ;; 발신자 주소 읽기
+  slice cs = in_msg_full.begin_parse();
+  int flags = cs~load_uint(4);
+  slice sender_address = cs~load_msg_addr();
+  
+  ;; 스토리지 로드
+  (slice owner_address, cell game_config, cell player_stats) = load_data();
+  
+  ;; 메시지 내용 확인
+  int op = in_msg_body~load_uint(32);  ;; 오퍼레이션 코드
+  int query_id = in_msg_body~load_uint(64);  ;; 쿼리 ID
+  
+  ;; 오퍼레이션 코드에 따라 처리
+  if (op == 1) {  ;; 보상 청구 오퍼레이션
+    int user_score = in_msg_body~load_uint(32);  ;; 사용자 점수
+    process_reward_claim(sender_address, query_id, user_score, owner_address, game_config, player_stats);
+    return ();
+  }
+  
+  if (op == 2) {  ;; 관리자 설정 업데이트 (소유자만 가능)
+    throw_unless(101, equal_slices(sender_address, owner_address));  ;; 소유자 확인
+    
+    ;; 새 설정 로드
+    int new_min_score = in_msg_body~load_uint(32);
+    int new_reward_amount = in_msg_body~load_coins();
+    
+    ;; 새 설정 저장
+    cell new_config = begin_cell()
+      .store_uint(new_min_score, 32)
+      .store_coins(new_reward_amount)
+      .end_cell();
+      
+    save_data(owner_address, new_config, player_stats);
+    return ();
+  }
+  
+  ;; 알 수 없는 오퍼레이션은 무시
+}
+
+;; GET 메소드 - 게임 설정 조회
+(int, int) get_game_config() method_id {
+  (_, cell game_config, _) = load_data();
+  return load_game_config(game_config);
+}

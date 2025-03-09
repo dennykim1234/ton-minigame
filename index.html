@@ -23,6 +23,14 @@
                 <div class="wallet-info">
                     <div class="wallet-address">주소: <span id="wallet-address"></span></div>
                     <div class="ton-balance">TON 잔액: <span id="ton-balance">0.00</span></div>
+                    <!-- 가상 TON 잔액 표시 -->
+                    <div class="wallet-info">
+                    <div>가상 TON 잔액: <span id="virtual-ton-balance">0.00</span></div>
+                    </div>
+
+                    <!-- 리더보드 및 점수 제출 버튼 -->
+                    <button id="submitScore" disabled>점수 제출하기</button>
+                    <button id="showLeaderboard">리더보드 보기</button>
                 </div>
                 <button id="disconnect-wallet-btn" class="wallet-btn disconnect">연결 해제</button>
             </div>

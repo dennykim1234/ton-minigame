@@ -11,6 +11,8 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "@tonclient/core": "^1.30.0",
+    "@tonclient/lib-node": "^1.30.0",
     "@tonconnect/sdk": "^3.0.7"
   }
 }
