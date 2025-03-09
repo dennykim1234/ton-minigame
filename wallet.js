@@ -2,7 +2,7 @@ import { TonConnect } from '@tonconnect/sdk';
 
 // TonConnect 인스턴스 생성
 const tonConnect = new TonConnect({
-    manifestUrl: 'https://yourgame.com/tonconnect-manifest.json' // 실제 배포 시 변경
+    manifestUrl: 'https://dennykim1234.github.io/ton-minigame/tonconnect-manifest.json' // 실제 배포 시 변경
 });
 
 // 지갑 상태 변수
